@@ -182,10 +182,11 @@ class ModelForecast:
     Class describing model forecasts of track and intensity for TCs
 
     Args:
-        data: Contents of an ATCF A-deck file
+        filename: ATCF A-deck file
     """
-    def __init__(self, data):
-        lines = [l.strip() for l in data.split('\n') if len(l.strip()) > 0]
+    def __init__(self, filename):
+        with open(filename) as f:
+            lines = [l.strip() for l in f.readlines() if len(l.strip()) > 0]
         fields = [s.strip() for s in lines[0].split(',')]
         self.modelname = fields[4]
         # Initialization time
