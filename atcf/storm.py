@@ -187,10 +187,16 @@ class ModelForecast:
     def __init__(self, filename):
         with open(filename) as f:
             lines = [l.strip() for l in f.readlines() if len(l.strip()) > 0]
+        # Group lines by time. If multiple wind radii thresholds exist,
+        # multiple lines will exist for each ob
+        timegroups = {}
+        for line in lines:
+            fh = int(line.split(',')[5].strip())
+            timegroups.setdefault(fh, []).append(line)
+        # Parse time-independent attributes
         fields = [s.strip() for s in lines[0].split(',')]
         self.modelname = fields[4]
-        # Initialization time
-        self.init = datetime.strptime(fields[2], '%Y%m%d%H')
+        self.init = datetime.strptime(fields[2], '%Y%m%d%H') # Initialization time
         # Parse time-dependent attributes
         dtypes = {
             'lat': float, 'lon': float, 'FH': float, 'time': 'datetime64[m]',
@@ -199,11 +205,12 @@ class ModelForecast:
         # Initialize arrays
         for arrname, dtype in dtypes.items():
             if dtype is float:
-                setattr(self, arrname, np.full(len(lines), fill_value=np.nan, dtype=dtype))
+                setattr(self, arrname, np.full(len(timegroups), fill_value=np.nan, dtype=dtype))
             else:
-                setattr(self, arrname, np.empty(len(lines), dtype=dtype))
-        for i, line in enumerate(lines):
-            fields = [field.strip() for field in line.split(',')]
+                setattr(self, arrname, np.empty(len(timegroups), dtype=dtype))
+        # Parse information from each time linegroup
+        for i, lines in enumerate(timegroups.values()):
+            fields = [field.strip() for field in lines[0].split(',')]
             # Storm center coordinates (lon taken in degrees east (-180 to 180))
             latstr, lonstr = fields[6], fields[7]
             if latstr[-1] == 'N':
