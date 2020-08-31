@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 # Map basin IDs to the basin letters used in storm IDs
-basinletters = {'AL': 'L', 'LS': 'Q', 'EP': 'E', 'CP': 'C'}
+basinletters = {'AL': 'L', 'LS': 'Q', 'EP': 'E', 'CP': 'C', 'WP': 'W'}
 
 
 class ADeck:
